@@ -71,8 +71,23 @@ class EPUBDocument:
     def save(self, output_path: str | Path) -> Path:
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
+        _fix_toc_uids(self.book)
         epub.write_epub(str(output_path), self.book)
         return output_path
+
+
+def _fix_toc_uids(book: epub.EpubBook) -> None:
+    """Ensure every TOC entry has a non-None uid to prevent lxml errors."""
+    for i, entry in enumerate(book.toc):
+        if isinstance(entry, epub.Link) and not entry.uid:
+            entry.uid = f"toc_{i}"
+        elif isinstance(entry, tuple) and len(entry) == 2:
+            section, children = entry
+            if isinstance(section, epub.Link) and not section.uid:
+                section.uid = f"toc_section_{i}"
+            for j, child in enumerate(children):
+                if isinstance(child, epub.Link) and not child.uid:
+                    child.uid = f"toc_{i}_{j}"
 
 
 def _extract_text_from_html(
