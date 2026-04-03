@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "epub-translator"
+version = "1.0.0"
+description = "Translate EPUB books from any language (including Old English) into modern English"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "openai>=1.0",
+    "ebooklib>=0.18",
+    "beautifulsoup4>=4.12",
+    "lxml>=4.9",
+    "rich>=13.0",
+    "click>=8.1",
+    "tiktoken>=0.5",
+]
+
+[project.scripts]
+epub-translate = "epub_translator.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["epub_translator*"]
