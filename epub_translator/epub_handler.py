@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
-import copy
-import os
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterator
 
 import ebooklib
 from ebooklib import epub
-from bs4 import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup, NavigableString, XMLParsedAsHTMLWarning
+
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 
 @dataclass

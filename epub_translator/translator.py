@@ -37,6 +37,7 @@ class TranslationConfig:
     max_retries: int = 5
     base_delay: float = 2.0
     temperature: float = 0.3
+    base_url: str | None = None
 
 
 def count_tokens(text: str, model: str = "gpt-4o-mini") -> int:
@@ -45,6 +46,29 @@ def count_tokens(text: str, model: str = "gpt-4o-mini") -> int:
     except KeyError:
         enc = tiktoken.get_encoding("cl100k_base")
     return len(enc.encode(text))
+
+
+def _resolve_api_config(
+    api_key: str | None, base_url: str | None
+) -> tuple[str, str]:
+    """Determine API key and base URL, checking multiple env vars."""
+    key = api_key
+    url = base_url
+
+    if not key:
+        key = os.environ.get("OPENAI_API_KEY")
+    if not key:
+        key = os.environ.get("OPENROUTER_API_KEY")
+        if key and not url:
+            url = "https://openrouter.ai/api/v1"
+
+    if not key:
+        raise EnvironmentError(
+            "No API key found. Set OPENAI_API_KEY or OPENROUTER_API_KEY "
+            "environment variable, or pass --api-key on the command line."
+        )
+
+    return key, url or "https://api.openai.com/v1"
 
 
 def translate_chunks(
@@ -60,14 +84,8 @@ def translate_chunks(
     if config is None:
         config = TranslationConfig()
 
-    key = api_key or os.environ.get("OPENAI_API_KEY")
-    if not key:
-        raise EnvironmentError(
-            "No OpenAI API key found. Set the OPENAI_API_KEY environment "
-            "variable or pass --api-key on the command line."
-        )
-
-    client = OpenAI(api_key=key)
+    key, url = _resolve_api_config(api_key, config.base_url)
+    client = OpenAI(api_key=key, base_url=url)
 
     total = len(chunks)
     for i, chunk in enumerate(chunks):

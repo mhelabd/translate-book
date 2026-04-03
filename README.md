@@ -12,6 +12,7 @@ Uses the OpenAI API to produce high-quality literary translations while preservi
 - **Progress bar** — real-time progress reporting with estimated time remaining.
 - **Configurable** — choose your OpenAI model, adjust chunk size, and control the translation temperature.
 - **Automatic retries** — handles API rate limits and transient errors with exponential backoff.
+- **OpenRouter support** — works with OpenAI, OpenRouter, or any OpenAI-compatible API out of the box.
 
 ## Requirements
 
@@ -42,11 +43,13 @@ pip install -e .
 ## Quick Start
 
 ```bash
-# Set your API key
+# With OpenAI
 export OPENAI_API_KEY="sk-..."
-
-# Translate an EPUB
 epub-translate beowulf.epub
+
+# With OpenRouter (auto-detected from env var)
+export OPENROUTER_API_KEY="sk-or-..."
+epub-translate beowulf.epub --model openai/gpt-4o-mini
 ```
 
 This produces `beowulf_modern_english.epub` in the current directory.
@@ -68,8 +71,9 @@ epub-translate [OPTIONS] INPUT_FILE
 | Option               | Default            | Description                                           |
 |----------------------|--------------------|-------------------------------------------------------|
 | `-o, --output`       | `<input>_modern_english.epub` | Output file path                          |
-| `--api-key`          | `$OPENAI_API_KEY`  | OpenAI API key                                        |
-| `--model`            | `gpt-4o-mini`      | OpenAI model to use                                   |
+| `--api-key`          | `$OPENAI_API_KEY` / `$OPENROUTER_API_KEY` | API key                        |
+| `--base-url`         | auto-detected      | Custom API base URL (e.g. OpenRouter)                 |
+| `--model`            | `gpt-4o-mini`      | Model to use (any OpenAI-compatible model name)       |
 | `--chunk-size`       | `2000`             | Max characters per translation chunk                  |
 | `--temperature`      | `0.3`              | Sampling temperature (lower = more deterministic)     |
 | `-h, --help`         |                    | Show help and exit                                    |
@@ -88,6 +92,9 @@ epub-translate beowulf.epub --model gpt-4o
 
 # Translate a French novel
 epub-translate les_miserables.epub -o les_mis_english.epub
+
+# Use OpenRouter
+OPENROUTER_API_KEY=sk-or-... epub-translate book.epub --model openai/gpt-4o-mini
 
 # Pass API key directly
 epub-translate book.epub --api-key sk-your-key-here

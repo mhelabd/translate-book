@@ -34,15 +34,20 @@ console = Console()
 )
 @click.option(
     "--api-key",
-    envvar="OPENAI_API_KEY",
     default=None,
-    help="OpenAI API key (or set OPENAI_API_KEY env var).",
+    help="API key (or set OPENAI_API_KEY / OPENROUTER_API_KEY env var).",
+)
+@click.option(
+    "--base-url",
+    default=None,
+    help="Custom API base URL (e.g. https://openrouter.ai/api/v1). "
+    "Auto-detected when OPENROUTER_API_KEY is set.",
 )
 @click.option(
     "--model",
     default="gpt-4o-mini",
     show_default=True,
-    help="OpenAI model to use for translation.",
+    help="Model to use for translation (any OpenAI-compatible model name).",
 )
 @click.option(
     "--chunk-size",
@@ -60,6 +65,7 @@ def main(
     input_file: str,
     output: str | None,
     api_key: str | None,
+    base_url: str | None,
     model: str,
     chunk_size: int,
     temperature: float,
@@ -69,11 +75,14 @@ def main(
     Supports Old English, Middle English, foreign languages, and more.
     Preserves the EPUB structure, formatting, and metadata.
 
+    Works with OpenAI, OpenRouter, or any OpenAI-compatible API.
+
     \b
     Examples:
       epub-translate beowulf.epub
       epub-translate book.epub -o translated.epub --model gpt-4o
-      epub-translate libro.epub --api-key sk-...
+      OPENROUTER_API_KEY=sk-or-... epub-translate book.epub
+      epub-translate book.epub --base-url https://openrouter.ai/api/v1
     """
     input_path = Path(input_file)
 
@@ -115,6 +124,7 @@ def main(
     config = TranslationConfig(
         model=model,
         temperature=temperature,
+        base_url=base_url,
     )
 
     console.print("[bold blue]Step 3/3:[/bold blue] Translating...\n")
